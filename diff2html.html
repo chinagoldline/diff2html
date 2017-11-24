@@ -1,0 +1,137 @@
+
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>diff2html.js Demos</title>
+
+<link rel="stylesheet" href="github.min.css">
+
+<link rel="stylesheet" type="text/css" href="diff2html.min.css">
+<script type="text/javascript" src="diff2html.min.js"></script>
+
+<script src="highlight.min.js"></script>
+<script src="scala.min.js"></script>
+<script>
+        var lineDiffExample ='diff --git a/original.java b/original.java\n' +'--- a/original.java \n'+'+++ b/original.java \n'+
+'@@ -1,72 +1,71 @@ \n'+
+' package com.ideal.appinfo.config; \n'+
+'  \n'+
+' import com.ideal.appinfo.notifier.MessageNotifier; \n'+
+' import de.codecentric.boot.admin.config.AdminServerProperties; \n'+
+' import de.codecentric.boot.admin.notify.*; \n'+
+' import de.codecentric.boot.admin.notify.filter.FilteringNotifier; \n'+
+' import de.codecentric.boot.admin.notify.filter.web.NotificationFilterController; \n'+
+' import de.codecentric.boot.admin.web.PrefixHandlerMapping; \n'+
+'-import org.springframework.beans.factory.annotation.Autowired; \n'+
+' import org.springframework.boot.autoconfigure.AutoConfigureAfter; \n'+
+' import org.springframework.boot.autoconfigure.AutoConfigureBefore; \n'+
+' import org.springframework.boot.autoconfigure.condition.ConditionalOnBean; \n'+
+' import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean; \n'+
+' import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate; \n'+
+' import org.springframework.boot.autoconfigure.condition.NoneNestedConditions; \n'+
+' import org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration; \n'+
+' import org.springframework.boot.context.properties.ConfigurationProperties; \n'+
+' import org.springframework.context.annotation.Bean; \n'+
+' import org.springframework.context.annotation.Conditional; \n'+
+' import org.springframework.context.annotation.Configuration; \n'+
+' import org.springframework.context.annotation.Primary; \n'+
+' import org.springframework.scheduling.annotation.EnableScheduling; \n'+
+' import org.springframework.scheduling.annotation.Scheduled; \n'+
+'  \n'+
+' import java.util.List; \n'+
+' import java.util.concurrent.TimeUnit; \n'+
+'  \n'+
+' /** \n'+
+'  * @author Shmily \n'+
+'  * @email shmily_zgs@163.com \n'+
+'  * @date 2017/10/26 14:40 \n'+
+'  */ \n'+
+' @Configuration \n'+
+' @EnableScheduling \n'+
+' public class NotifierConfiguration { \n'+
+'     @Autowired \n'+
+'     private Notifier delegate; \n'+
+'  \n'+
+'     @Bean \n'+
+'     public FilteringNotifier filteringNotifier() { \n'+
+'         return new FilteringNotifier(delegate); \n'+
+'     } \n'+
+' \n'+
+'     @Bean \n'+
+'     @Primary \n'+
+'     public RemindingNotifier remindingNotifier() { \n'+
+'-        RemindingNotifier notifier = new RemiandingNotifier(filteringNotifier()); \n'+
+'-        notifier.setReminderStatuses(new Staring[]{"UNKNOWN","UP","DOWN", "OFFLINE"}); \n'+
+'+        RemindingNotifier notifier = new RemindingNotifier(filteringNotifier()); \n'+
+'+        notifier.setReminderStatuses(new String[]{"UNKNOWN","UP","DOWN", "OFFLINE"}); \n'+
+'-        notifier.setReminderPeriod(TimeUniat.SECONDS.toMillis(10)); \n'+
+'+        notifier.setReminderPeriod(TimeUnit.SECONDS.toMillis(10)); \n'+
+'         return notifier; \n'+
+'     } \n'+
+'  \n'+
+'     /** \n'+
+'      * config \n'+
+'      */ \n'+
+'     @Configuration \n'+
+'     @AutoConfigureBefore({ de.codecentric.boot.admin.config.NotifierConfiguration.NotifierListenerConfiguration.class, \n'+
+'             de.codecentric.boot.admin.config.NotifierConfiguration.CompositeNotifierConfiguration.class }) \n'+
+'     public static class MessageNotifierConfiguration { \n'+
+'         @Bean \n'+
+'         @ConditionalOnMissingBean \n'+
+'         public MessageNotifier messageNotifier() { \n'+
+'             return new MessageNotifier(); \n'+
+'         } \n'+
+'     } \n'+
+'     @Scheduled(fixedRate = 1_000L) \n'+
+'     public void remind() { \n'+
+'         remindingNotifier().sendReminders(); \n'+
+'     } \n'+
+'  \n'+
+' } \n';
+
+        document.addEventListener("DOMContentLoaded", function() {
+		     
+            // parse the diff to json
+            var diffJson = Diff2Html.getJsonFromDiff(lineDiffExample);
+            //alert(diffJson)
+            // collect all the file extensions in the json
+            var allFileLanguages = diffJson.map(function(line) {
+                return line.language;
+            });
+
+            // remove duplicated languages
+            var distinctLanguages = allFileLanguages.filter(function(v, i) {
+                return allFileLanguages.indexOf(v) == i;
+            });
+
+            // pass the languages to the highlightjs plugin
+            hljs.configure({languages: distinctLanguages});
+
+            // generate and inject the diff HTML into the desired place
+            document.getElementById("side-by-side").innerHTML = Diff2Html.getPrettyHtml(diffJson, { inputFormat: 'json', outputFormat: 'side-by-side' });
+
+            // collect all the code lines and execute the highlight on them
+            var codeLines = document.getElementsByClassName("d2h-code-line-ctn");
+            [].forEach.call(codeLines, function(line) {
+                hljs.highlightBlock(line);
+            });
+        });
+    </script>
+
+</head>
+<body style="text-align: center; font-family: 'Source Sans Pro',sans-serif;">
+<div id="css-script-menu">
+<div class="css-script-center">
+<div class="css-script-clear"></div>
+</div>
+</div>
+<h1 style="margin-top:150px;">diff2html.js Demos</h1>
+<h2>Side by Side</h2>
+<div id="side-by-side" style="margin: 0 auto;">
+</div>
+
+</body>
+</html>
